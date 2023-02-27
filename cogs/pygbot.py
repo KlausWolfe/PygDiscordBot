@@ -79,7 +79,6 @@ class Chatbot:
             "prompt": self.character_info + '\n'.join(
                 self.conversation_history.split('\n')[-self.num_lines_to_keep:]) + f'{self.char_name}:',
         }
-        print(prompt)
         # send a post request to the API endpoint
         response = requests.post(f"{self.endpoint}/api/v1/generate", json=prompt)
         # check if the request was successful
