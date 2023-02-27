@@ -28,6 +28,7 @@ model_config = {
 
 CHATLOG_DIR = "chatlog_dir"
 
+
 class Chatbot:
     def __init__(self, char_filename, chatlog_dir, endpoint):
         self.endpoint = endpoint
@@ -65,11 +66,13 @@ class Chatbot:
             self.conversation_history = "<START>\n" + "".join(lines[-num_lines:])
 
     async def log_chat(self, name, message):
-        with open(self.convo_filename, "a", encoding="utf-8") as f:
-                f.write(f'{name}: {message}\n')
+        # write message to chat log file
+        log_filename = os.path.join(CHATLOG_DIR, f"{self.char_name}.log")
+        with open(log_filename, "a", encoding="utf-8") as f:
+            f.write(f"{name}: {message}\n")
 
     async def save_conversation(self, message, cleaned_message):
-        self.conversation_history += f'{message.author.name}: {cleaned_message}\n'
+        self.conversation_history += f"{message.author.name}: {cleaned_message}\n"
         await self.log_chat(message.author.name, cleaned_message)
         # format prompt
         prompt = {
