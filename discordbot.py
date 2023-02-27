@@ -9,7 +9,6 @@ from discord.ext import commands
 from discord.ext.commands import Bot
 import asyncio
 import shutil
-from colorama import Fore, Style
 import sys
 
 if __name__ == '__main__':
@@ -102,20 +101,20 @@ if os.path.exists('chardata.json'):
     with open("chardata.json") as read_file:
         character_data = json.load(read_file)
     # Prompt the user to use the same character
-    print(f"\n\n{Fore.CYAN}✔ Found {character_data['char_name']} data file.{Style.RESET_ALL} Loading character...{Style.RESET_ALL}")
+    print(f"Last Character used: {character_data['char_name']}")
     # Set up the timer
     try:
-        answer = input(f"\nLoad a new character?{Fore.RED} (y/n) {Fore.GREEN}[n]: {Style.RESET_ALL}")
+        answer = input(f"\nUse this character? (y/n) [y]: ")
     except:
-        answer = "n"
+        answer = "y"
 
 else:
-    answer = "y"
+    answer = "n"
 
-if answer.lower() == "y":
+if answer.lower() == "n":
     for i, character in enumerate(characters):
         print(f"{i+1}. {character['char_name']}")
-    selected_char = int(input("Please select a character: ")) - 1
+    selected_char = int(input(f"\n\nPlease select a character: ")) - 1
     data = characters[selected_char]
     update_name = input("Update Bot name and pic? (y or n): ")
     # Get the character name, greeting, and image
@@ -129,7 +128,6 @@ else:
 # on ready event that will update the character name and picture if you chose yes
 @bot.event
 async def on_ready():
-
     if update_name.lower() == "y":
         try:
             with open(f"Characters/{char_image}", 'rb') as f:
@@ -148,9 +146,22 @@ async def on_ready():
                 pass
             else:
                 raise error
-    print(f'\n{Fore.CYAN}{bot.user.name} {Style.RESET_ALL}has connected to Discord!\n')
-    for guild in bot.guilds:
-        print(f"I'm active in {Fore.GREEN}{guild}{Style.RESET_ALL}!")
+    try:
+        # get the channel object from the channel ID
+        channel = bot.get_channel(int(bot.channel_id))
+        # get the guild object from the channel object
+        guild = channel.guild
+        # check that the channel is a text channel
+        if isinstance(channel, discord.TextChannel):
+            channel_name = channel.name
+            print(f"Watching {channel_name} in the {guild.name} server")
+        else:
+            print(f"Channel with ID {bot.channel_id} is not a text channel")
+    except AttributeError:
+        print("\n\n\n\nERROR: Unable to retrieve channel from .env \nPlease make sure you're using a valid channel ID, not a server ID.")
+
+
+
 
 async def on_message(message, bot):
     if message.author == bot.user:
@@ -169,4 +180,8 @@ async def load_cogs() -> None:
                 print(exception)
 
 asyncio.run(load_cogs())
-bot.run(DISCORD_BOT_TOKEN)
+try:
+    bot.run(DISCORD_BOT_TOKEN)
+except discord.errors.LoginFailure:
+    print("\n\n\n\nThere is an error with the Discord Bot token. Please check your .env file")
+
