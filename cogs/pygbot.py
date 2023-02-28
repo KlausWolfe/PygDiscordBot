@@ -56,11 +56,8 @@ class Chatbot:
     async def set_convo_filename(self, convo_filename):
         # set the conversation filename and load conversation history from file
         self.convo_filename = convo_filename
-        if not os.path.isfile(convo_filename):
-            # create a new file if it does not exist
-            with open(convo_filename, "w", encoding="utf-8") as f:
-                f.write("<START>\n")
-        with open(convo_filename, "r", encoding="utf-8") as f:
+        log_filename = os.path.join(CHATLOG_DIR, f"{self.char_name}.log")
+        with open(log_filename, "r", encoding="utf-8") as f:
             lines = f.readlines()
             num_lines = min(len(lines), self.num_lines_to_keep)
             self.conversation_history = "<START>\n" + "".join(lines[-num_lines:])
@@ -124,11 +121,12 @@ class ChatbotCog(commands.Cog, name="chatbot"):
     async def chat_command(self, message, message_content) -> None:
         # Get the gnarly response message from the chatbot and return it, dude!
         if message.guild is not None:
-            server_name = message.channel.name
-            chatlog_filename = os.path.join(self.chatlog_dir, f"{self.bot.user.name} - {server_name} - chatlog.txt")
+            server_name = message.guild.name
+            chatlog_filename = os.path.join(self.chatlog_dir, f"{self.bot.user.name} - {server_name} - chatlog.log")
         else:
             # name file after sender
-            chatlog_filename = os.path.join(self.chatlog_dir, f"{self.bot.user.name} - {message.author.name} - chatlog.txt")
+            chatlog_filename = os.path.join(self.chatlog_dir,
+                                            f"{self.bot.user.name} - {message.author.name} - chatlog.log")
 
         # If this is the first message in the convo, set the convo filename, bro!
         if self.chatbot.convo_filename != chatlog_filename:
