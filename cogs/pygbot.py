@@ -73,6 +73,7 @@ class Chatbot:
 
     async def save_conversation(self, message, cleaned_message):
         self.conversation_history += f"{message.author.name}: {cleaned_message}\n"
+        print(f"{message.author.name}: {cleaned_message}")
         await self.log_chat(message.author.name, cleaned_message)
         # format prompt
         prompt = {
@@ -91,8 +92,8 @@ class Chatbot:
             response_text = parts[0][1:]
             # add bot response to conversation history
             self.conversation_history = self.conversation_history + f'{self.char_name}: {response_text}\n'
+            print(f"{self.char_name}: {response_text}")
             await self.log_chat(self.char_name, response_text)
-            
             return response_text
 
 class ChatbotCog(commands.Cog, name="chatbot"):
