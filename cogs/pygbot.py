@@ -131,7 +131,7 @@ class ChatbotCog(commands.Cog, name="chatbot"):
 
         # If this is the first message in the convo, set the convo filename, bro!
         if self.chatbot.convo_filename != chatlog_filename:
-            self.chatbot.set_convo_filename(chatlog_filename)
+            await self.chatbot.set_convo_filename(chatlog_filename)
 
         # Save the convo and get a sweet response, my man!
         cleaned_message = await self.replace_user_mentions(message_content)
