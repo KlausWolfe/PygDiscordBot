@@ -52,7 +52,7 @@ Look for this url in the google collab output:
 
 ![url example](https://raytracing-benchmarks.are-really.cool/5utGhMj.png)
 
-# Slash Commands (for developer use for now): 
+# Slash Commands (helpful for developers): 
 
 | Command Name   | Slash Command    |
 | ---            | ---              |
