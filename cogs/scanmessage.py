@@ -27,7 +27,7 @@ class ScanMessageCog(commands.Cog, name="scan_message"):
                         return world_info
                     else:
                         #print(f"No matching world info found for key '{message.content}'.")
-                        return
+                        return ""
                 except Exception as e:
                     #print(f"Error loading world info: {e}")
                     return ""
@@ -131,21 +131,30 @@ class ScanMessageCog(commands.Cog, name="scan_message"):
                             except:
                                 pass
                 if not (filename):
-                    return
+                    return ""
         return ""
     #DM Scan       
     @commands.command(name="dm_scan")
     async def dm_scan(self,message, message_content, char_name)  -> None:
         # Define a dictionary with keywords and their corresponding gifs
+        user = message.author
+        path = (f"{self.chatlog_dir}/{user.name} - chatlog.log")
+        channel = await user.create_dm()
+        async for msg in channel.history(limit=1, oldest_first=True):
+            first_message_id = msg.id
+            break 
+        if (message.id == first_message_id):
+            dm_message = f"A direct message? What do you wish to speak with {str(char_name)} in private for?"
+            await channel.send(dm_message)
+            with open(path, 'a') as f:
+                f.write(f"{user.name}: {message_content}\n")
+                f.write(f"{str(char_name)}: {dm_message}\n")
+            return True
         if (self.bot.user in message.mentions):
-            user = message.author
-            path = (f"{self.chatlog_dir}/{user.name} - chatlog.log")
             dm_message = f"Yes, {user.name}? You wanted to speak privately?\n"
             if ("dm" in str(message.content).lower()) or ("direct message" in str(message.content).lower()):
-                channel = await user.create_dm()
                 await channel.send(dm_message)
                 with open(path, 'a') as f:
-                    f.write(f"{user.name}: {message_content}\n")
                     f.write(f"{str(char_name)}: {dm_message}\n")
                 return True
             else:
