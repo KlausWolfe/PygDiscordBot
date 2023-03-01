@@ -97,6 +97,29 @@ class Chatbot:
             await self.bot.get_cog("scan_message").gif_scan(message, response_text, self.char_name)
             return response_text
 
+    def batch_save_conversation(self, message):
+        # add user message to conversation history
+        self.conversation_history += f"{message}\n"
+        # define the prompt
+        prompt = {
+            "prompt": self.character_info + '\n'.join(
+                self.conversation_history.split('\n')[-self.num_lines_to_keep:]) + f'{self.char_name}:',
+        }
+        # send a post request to the API endpoint
+        response = requests.post(f"{self.endpoint}/api/v1/generate", json=prompt)
+        # check if the request was successful
+        if response.status_code == 200:
+            # get the results from the response
+            results = response.json()['results']
+            print(results)
+            text = results[0]['text']
+            # split the response to remove excess dialogue
+            parts = re.split(r'\n[a-zA-Z]', text)[:1]
+            response_text = parts[0][1:]
+            # add bot response to conversation history
+            self.conversation_history = self.conversation_history + f'{self.char_name}: {response_text}\n'
+            return response_text
+
 
 class ChatbotCog(commands.Cog, name="chatbot"):
     def __init__(self, bot):
@@ -127,7 +150,6 @@ class ChatbotCog(commands.Cog, name="chatbot"):
     # Normal Chat handler 
     @commands.command(name="chat")
     async def chat_command(self, message, message_content) -> None:
-        # Get the gnarly response message from the chatbot and return it, dude!
         if message.guild:
             server_name = message.channel.name
         else:
@@ -142,11 +164,11 @@ class ChatbotCog(commands.Cog, name="chatbot"):
             await self.chatbot.set_convo_filename(chatlog_filename)
         response = await self.chatbot.save_conversation(message, await self.replace_user_mentions(message_content))
         return response  
-    @commands.command(name="hello_world")
-    async def hello_world(self, bot) -> None:
+    @commands.command(name="batch_chat")
+    async def batch_chat_command(self, message_content) -> None:
+
         # get response message from chatbot and return it
-        response = "LETS FUCKING GOOOOOOOOOOOOOO"
-        print("received in cog")
+        response = self.chatbot.batch_save_conversation(await self.replace_user_mentions(message_content))
         return response
     
 async def setup(bot):
