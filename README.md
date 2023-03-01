@@ -52,9 +52,10 @@ Look for this url in the google collab output:
 
 ![url example](https://raytracing-benchmarks.are-really.cool/5utGhMj.png)
 
-# Slash Commands (helpful for developers): 
+# Slash Commands: 
+Right now these commands are mostly helpful for developers. Use /sync to force the slash commands to show up if you don't see them.
+| Command Name   | Slash Command    | More Info                                                                               |
+| ---            | ---              | ---                                                                                     |
+| Sync Commands  | `/sync`          | Needed to make the commands appear right away.                                         |
+| Reload Cog     | `/reload <name>` | Lets you reload a specific cog instead of needing to restart everything.               |
 
-| Command Name   | Slash Command    |
-| ---            | ---              |
-| Reload Cog     | `/reload <name>` |
-| Sync Commands  | `/sync`          |
