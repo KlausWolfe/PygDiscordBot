@@ -1,4 +1,12 @@
 @echo off
+
+REM Set the console window size to 80 columns by 25 lines
+mode con lines=25
+
+echo ===========================================
+echo S E T T I N G   U P   E N V I R O N M E N T
+echo ===========================================
+
 git pull
 rem Check if python is installed
 where python
@@ -29,8 +37,25 @@ pip install torch==1.12.1+cu116 torchvision==0.13.1+cu116 --extra-index-url http
 pip install --upgrade transformers
 rem clear console
 cls
-echo Set up Complete 
-echo Configure your .env file then launch run.bat
-echo or run using "python discordbot.py <DISCORD_BOT_TOKEN> <ENDPOINT> <CHANNEL_ID>"
+
+rem echo Set up Complete 
+rem echo Configure your .env file then launch run.bat
+rem echo or run using "python discordbot.py <DISCORD_BOT_TOKEN> <ENDPOINT> <CHANNEL_ID>"
+
+REM Check if .env file exists
+if not exist .env (
+    echo Set up Complete 
+	echo Configure your .env file then launch run.bat
+	echo or run using "python discordbot.py <DISCORD_BOT_TOKEN> <ENDPOINT> <CHANNEL_ID>"
+    pause
+    exit /b
+)
+
+REM Load environment variables from .env file
+for /f "delims=" %%a in ('type .env') do set "%%a"
+
+REM Run the Python script with the environment variables as arguments
+python discordbot.py %DISCORD_BOT_TOKEN% %ENDPOINT% %CHANNEL_ID%
+
 
 pause

@@ -2,6 +2,7 @@ from discord.ext import commands
 from dotenv import load_dotenv
 import asyncio
 import random
+
 load_dotenv()
 import re
 
@@ -9,8 +10,6 @@ import re
 class ListenerCog(commands.Cog, name="listener"):
     def __init__(self, bot):
         self.bot = bot
-
-
 
     async def has_image_attachment(self, message_content):
         url_pattern = re.compile(r'http[s]?://[^\s/$.?#].[^\s]*\.(jpg|jpeg|png|gif)', re.IGNORECASE)
@@ -28,12 +27,11 @@ class ListenerCog(commands.Cog, name="listener"):
         else:
             return False
 
-
     @commands.Cog.listener()
     async def on_message(self, message):
 
-        # if message starts with period or is by the bot - do nothing
-        if message.author == self.bot.user or message.content.startswith("."):
+        # if message starts with ".", "/"" or is by the bot - do nothing
+        if message.author == self.bot.user or message.content.startswith((".", "/")):
             return
 
         # if a reply message is not for the bot - do nothing
@@ -44,11 +42,10 @@ class ListenerCog(commands.Cog, name="listener"):
         Main On Message Handler
 
         This part needs to be as basic as possible
-        
+
         """
         # if message is channel id argument or DM or
-        if message.channel.id == int(self.bot.channel_id) or message.guild is None:
-
+        if message.channel.id in [int(channel_id) for channel_id in self.bot.guild_ids] or message.guild is None:
             # image handling
             if await self.has_image_attachment(message):
                 image_response = await self.bot.get_cog("image_caption").image_comment(message, message.content)

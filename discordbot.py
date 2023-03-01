@@ -10,6 +10,7 @@ from discord.ext.commands import Bot
 import asyncio
 import shutil
 import sys
+import logging
 
 if __name__ == '__main__':
     if len(sys.argv) < 4:
@@ -24,7 +25,11 @@ if __name__ == '__main__':
 intents = discord.Intents.all()
 bot = Bot(command_prefix="/", intents=intents, help_command=None)
 bot.endpoint = ENDPOINT
+bot.chatlog_dir = "chatlog_dir"
+bot.endpoint_connected = False
 bot.channel_id = CHANNEL_ID
+bot.guild_ids = [int(x) for x in sys.argv[3].split(",")]
+bot.debug = True
 characters_folder = 'Characters'
 cards_folder = 'Cards'
 characters = []
@@ -114,9 +119,21 @@ else:
 if answer.lower() == "n":
     for i, character in enumerate(characters):
         print(f"{i+1}. {character['char_name']}")
-    selected_char = int(input(f"\n\nPlease select a character: ")) - 1
+    selected_char = None
+    while selected_char is None:
+        try:
+            selected_char = int(input(f"\n\nPlease select a character: ")) - 1
+            if selected_char < 0 or selected_char >= len(characters):
+                raise ValueError
+        except ValueError:
+            print("Invalid input. Please enter a number between 1 and", len(characters))
+            selected_char = None
     data = characters[selected_char]
-    update_name = input("Update Bot name and pic? (y or n): ")
+    update_name = None
+    while update_name not in ["y", "n"]:
+        update_name = input("Update Bot name and pic? (y or n): ").lower()
+        if update_name not in ["y", "n"]:
+            print("Invalid input. Please enter 'y' or 'n'.")
     # Get the character name, greeting, and image
     char_name = data["char_name"]
     char_filename = os.path.join(characters_folder, data['char_filename'])
@@ -124,6 +141,7 @@ if answer.lower() == "n":
     shutil.copyfile(char_filename, "chardata.json")
 else:
     update_name = "n"
+
 
 # on ready event that will update the character name and picture if you chose yes
 @bot.event
@@ -146,27 +164,24 @@ async def on_ready():
                 pass
             else:
                 raise error
-    try:
-        # get the channel object from the channel ID
-        channel = bot.get_channel(int(bot.channel_id))
-        # get the guild object from the channel object
-        guild = channel.guild
-        # check that the channel is a text channel
-        if isinstance(channel, discord.TextChannel):
-            channel_name = channel.name
-            print(f"Watching {channel_name} in the {guild.name} server")
-        else:
-            print(f"Channel with ID {bot.channel_id} is not a text channel")
-    except AttributeError:
-        print("\n\n\n\nERROR: Unable to retrieve channel from .env \nPlease make sure you're using a valid channel ID, not a server ID.")
+    print(f"{bot.user.name} has connected to:")
 
+    for items in bot.guild_ids:
+        try:
+            # get the channel object from the channel ID
+            channel = bot.get_channel(int(items))
+            # get the guild object from the channel object
+            guild = channel.guild
+            # check that the channel is a text channel
+            if isinstance(channel, discord.TextChannel):
+                channel_name = channel.name
+                print(f"{guild.name} \ {channel_name}")
+            else:
+                print(f"Channel with ID {bot.channel_id} is not a text channel")
+        except AttributeError:
+            print(
+                "\n\n\n\nERROR: Unable to retrieve channel from .env \nPlease make sure you're using a valid channel ID, not a server ID.")
 
-
-
-async def on_message(message, bot):
-    if message.author == bot.user:
-        return
-    await message.channe.send("hello world")
 
 # COG LOADER
 async def load_cogs() -> None:
@@ -175,13 +190,21 @@ async def load_cogs() -> None:
             extension = file[:-3]
             try:
                 await bot.load_extension(f"cogs.{extension}")
-            except Exception as e:
-                exception = f"{type(e).__name__}: {e}"
-                print(exception)
+                if extension == 'pygbot':
+                    bot.endpoint_connected = True
+            except commands.ExtensionError as e:
+                if extension == 'pygbot':
+                    bot.endpoint_connected = False
+                if not bot.debug:
+                    logging.error(f"\n\nIssue with ENDPOINT. Please check your ENDPOINT in the .env file")
+                else:
+                    exception = f"{type(e).__name__}: {e}"
+                    print(f"Failed to load extension {extension}\n{exception}")
+
 
 asyncio.run(load_cogs())
-try:
-    bot.run(DISCORD_BOT_TOKEN)
-except discord.errors.LoginFailure:
-    print("\n\n\n\nThere is an error with the Discord Bot token. Please check your .env file")
-
+if bot.endpoint_connected:
+    try:
+        bot.run(DISCORD_BOT_TOKEN)
+    except discord.errors.LoginFailure:
+        print("\n\n\n\nThere is an error with the Discord Bot token. Please check your .env file")

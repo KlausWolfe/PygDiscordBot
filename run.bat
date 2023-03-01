@@ -1,7 +1,7 @@
 @echo off
 
 REM Set the console window size to 80 columns by 25 lines
-mode con cols=80 lines=25
+mode con lines=25
 
 REM Check if .env file exists
 if not exist .env (
