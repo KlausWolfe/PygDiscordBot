@@ -27,7 +27,7 @@ class ScanMessageCog(commands.Cog, name="scan_message"):
                         return world_info
                     else:
                         #print(f"No matching world info found for key '{message.content}'.")
-                        return
+                        return ""
                 except Exception as e:
                     #print(f"Error loading world info: {e}")
                     return ""
