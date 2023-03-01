@@ -44,8 +44,12 @@ rem echo or run using "python discordbot.py <DISCORD_BOT_TOKEN> <ENDPOINT> <CHAN
 
 REM Check if .env file exists
 if not exist .env (
-    echo Set up Complete 
+    echo ===========================================
+	echo         S E T U P     C O M P L E T E
+	echo ===========================================
+	echo.
 	echo Configure your .env file then launch run.bat
+	echo.
 	echo or run using "python discordbot.py <DISCORD_BOT_TOKEN> <ENDPOINT> <CHANNEL_ID>"
     pause
     exit /b
