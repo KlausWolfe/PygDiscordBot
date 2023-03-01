@@ -38,7 +38,7 @@ class Chatbot:
             self.char_greeting = data["char_greeting"]
             self.world_scenario = data["world_scenario"]
             self.example_dialogue = data["example_dialogue"]
-
+        bot.char_name = self.char_name
         # initialize conversation history and character information
         self.convo_filename = None
         self.conversation_history = ""

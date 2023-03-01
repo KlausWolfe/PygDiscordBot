@@ -1,10 +1,26 @@
 import io, random, json, os, discord
 from discord.ext import commands
-
+import re
 class ScanMessageCog(commands.Cog, name="scan_message"):
     def __init__(self, bot):
         self.bot = bot
         self.chatlog_dir = bot.chatlog_dir
+        self.char_name = bot.char_name
+
+    async def replace_ids(self, content):
+        user_ids = re.findall(r'<@(\d+)>', content)
+        for user_id in user_ids:
+            user = await self.bot.fetch_user(int(user_id))
+            if user:
+                display_name = user.display_name
+                content = content.replace(f"<@{user_id}>", display_name)
+
+        emojis = re.findall(r'<:[^:]+:(\d+)>|<a:[^:]+:(\d+)>', content)
+        for emoji_id in emojis:
+            if ':' in content:
+                emoji_name = content.split(':')[1]
+                content = content.replace(f"<:{emoji_name}:{emoji_id}>", f":{emoji_name}:")
+        return content
     #World Info
     @commands.command(name="world_info")
     async def world_info(self, message, char_name) -> None:
@@ -56,7 +72,7 @@ class ScanMessageCog(commands.Cog, name="scan_message"):
     @commands.command(name="send_scan")
     async def send_scan(self, message, message_content, char_name) -> None:
         if ("send" in message_content.lower()) and not ("meme" in message_content.lower()):
-            path = (f"{self.chatlog_dir}/{user.name} - chatlog.log")
+            path = (f"{self.chatlog_dir}/{self.char_name} - chatlog.log")
             directory = f"Images/{str(char_name)}/"
             image_extensions = ('.png', '.jpg', '.jpeg', '.mp4')
             image_files = []
@@ -87,7 +103,7 @@ class ScanMessageCog(commands.Cog, name="scan_message"):
                                     await channel.send(file=file)
                                     send_text = str(f"[{str(char_name)} sends {user.name} a picture of {str(char_name)}'s {name.lower()}.]\n")
                                     with open(path, 'a') as f:
-                                        f.write(f"{user.name}: {message_content}\n")
+                                        f.write(f"{user.name}: {self.replace_ids(message_content)}\n")
                                         f.write(f"{str(char_name)}: " + send_text)
                                     return
                             except:
@@ -144,13 +160,14 @@ class ScanMessageCog(commands.Cog, name="scan_message"):
             async for msg in channel.history(limit=1, oldest_first=True):
                 first_message_id = msg.id
                 break
-            if (message.id == first_message_id):
+            if (message.id == first_message_id) and message.guild is None:
                 dm_message = f"A direct message? What do you wish to speak with {str(char_name)} in private for?"
-                await channel.send(dm_message)
-                with open(path, 'a') as f:
-                    f.write(f"{user.name}: {message_content}\n")
-                    f.write(f"{str(char_name)}: {dm_message}\n")
-                return True
+                if dm_message:
+                    await channel.send(dm_message)
+                    with open(path, 'a') as f:
+                        f.write(f"{user.name}: {self.replace_ids(message_content)}\n")
+                        f.write(f"{str(char_name)}: {dm_message}\n")
+                    return True
             if (self.bot.user in message.mentions):
                 dm_message = f"Yes, {user.name}? You wanted to speak privately?\n"
                 if ("dm" in str(message.content).lower()) or ("direct message" in str(message.content).lower()):
