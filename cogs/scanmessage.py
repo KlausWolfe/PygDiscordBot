@@ -139,26 +139,33 @@ class ScanMessageCog(commands.Cog, name="scan_message"):
         # Define a dictionary with keywords and their corresponding gifs
         user = message.author
         path = (f"{self.chatlog_dir}/{user.name} - chatlog.log")
-        channel = await user.create_dm()
-        async for msg in channel.history(limit=1, oldest_first=True):
-            first_message_id = msg.id
-            break 
-        if (message.id == first_message_id):
-            dm_message = f"A direct message? What do you wish to speak with {str(char_name)} in private for?"
-            await channel.send(dm_message)
-            with open(path, 'a') as f:
-                f.write(f"{user.name}: {message_content}\n")
-                f.write(f"{str(char_name)}: {dm_message}\n")
-            return True
-        if (self.bot.user in message.mentions):
-            dm_message = f"Yes, {user.name}? You wanted to speak privately?\n"
-            if ("dm" in str(message.content).lower()) or ("direct message" in str(message.content).lower()):
+        try:
+            channel = await user.create_dm()
+            async for msg in channel.history(limit=1, oldest_first=True):
+                first_message_id = msg.id
+                break
+            if (message.id == first_message_id):
+                dm_message = f"A direct message? What do you wish to speak with {str(char_name)} in private for?"
                 await channel.send(dm_message)
                 with open(path, 'a') as f:
+                    f.write(f"{user.name}: {message_content}\n")
                     f.write(f"{str(char_name)}: {dm_message}\n")
                 return True
+            if (self.bot.user in message.mentions):
+                dm_message = f"Yes, {user.name}? You wanted to speak privately?\n"
+                if ("dm" in str(message.content).lower()) or ("direct message" in str(message.content).lower()):
+                    await channel.send(dm_message)
+                    with open(path, 'a') as f:
+                        f.write(f"{str(char_name)}: {dm_message}\n")
+                    return True
+                else:
+                    return False
+            return False
+        except discord.errors.HTTPException as e:
+            if "Cannot send messages to this user" in str(e):
+                print("Error: Cannot send messages to this user")
             else:
-                return False
-        return False
+                print("Error:", e)
+
 async def setup(bot):
     await bot.add_cog(ScanMessageCog(bot))
