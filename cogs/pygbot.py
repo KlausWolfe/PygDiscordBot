@@ -84,9 +84,8 @@ class Chatbot:
             with open(self.convo_filename, "a", encoding="utf-8") as f:
                 f.write(f'{message.author.name}: {message_content}\n')
                 f.write(f'{self.char_name}: {response_text}\n')  # add a separator between
-        else:
-            print("endpoint issue")
-        return response_text
+
+            return response_text
 
 
 class ChatbotCog(commands.Cog, name="chatbot"):
@@ -127,8 +126,7 @@ class ChatbotCog(commands.Cog, name="chatbot"):
         if message.guild and self.chatbot.convo_filename != chatlog_filename or \
                 not message.guild and self.chatbot.convo_filename != chatlog_filename:
             await self.chatbot.set_convo_filename(chatlog_filename)
-        cleaned_message = await self.replace_user_mentions(message_content)
-        response = await self.chatbot.save_conversation(message, cleaned_message)
+        response = await self.chatbot.save_conversation(message, await self.replace_user_mentions(message_content))
         return response
 
 async def setup(bot):

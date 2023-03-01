@@ -51,14 +51,14 @@ class ListenerCog(commands.Cog, name="listener"):
                 image_response = await self.bot.get_cog("image_caption").image_comment(message, message.content)
                 response = await self.bot.get_cog("chatbot").chat_command(message, image_response)
                 async with message.channel.typing():
-                    await asyncio.sleep(2)  # Simulate some work being done
+                    await asyncio.sleep(1)  # Simulate some work being done
                     await message.reply(response)
             else:
                 # No image. Normal text response
                 response = await self.bot.get_cog("chatbot").chat_command(message, message.content)
                 if response:
                     async with message.channel.typing():
-                        await asyncio.sleep(random.randint(0, 2))  # Simulate some work being done
+                        await asyncio.sleep(1)  # Simulate some work being done
                         if random.random() < 0.8:
                             await message.channel.send(response)
                         else:
