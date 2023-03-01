@@ -1,7 +1,10 @@
 # Cog Branch
 
 ## New Features
-> Text Logs
+
+> Slash commands 
+
+> Chat Logs
 
 > Tenor Gif to Text
 
@@ -43,10 +46,15 @@ Discord only allows bots to be renamed twice per hour.
 
 DISORD_BOT_TOKEN: You can get this from the discord developers portal. [Guide for setting that up](https://rentry.org/discordbotguide)
 
-ENDPOINT: Set the endpoint variable with the KoboldAI url you get from this [google collab](https://colab.research.google.com/drive/1ZvYq4GmjfsyIkcTQcrBhSFXs8vQLLMAS).
+ENDPOINT: Set the endpoint variable with the KoboldAI url you get from this [google collab](https://colab.research.google.com/drive/1ZvYq4GmjfsyIkcTQcrBhSFXs8vQLLMAS). Or if you have a beefy gpu you can run kobold locally. https://github.com/KoboldAI/KoboldAI-Client
 
 Look for this url in the google collab output:
 
 ![url example](https://raytracing-benchmarks.are-really.cool/5utGhMj.png)
 
+# Slash Commands (for developer use for now): 
 
+| Command Name   | Slash Command    |
+| ---            | ---              |
+| Reload Cog     | `/reload <name>` |
+| Sync Commands  | `/sync`          |
