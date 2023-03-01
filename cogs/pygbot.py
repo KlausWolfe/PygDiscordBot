@@ -12,7 +12,7 @@ model_config = {
     "use_world_info": False,
     "use_memory": False,
     "max_context_length": 2400,
-    "max_length": 80,
+    "max_length": 180,
     "rep_pen": 1.02,
     "rep_pen_range": 1024,
     "rep_pen_slope": 0.9,
@@ -27,6 +27,7 @@ class Chatbot:
     def __init__(self, char_filename, bot):
         self.prompt = None
         self.endpoint = bot.endpoint
+        self.bot = bot
         # Send a PUT request to modify the settings
         requests.put(f"{self.endpoint}/config", json=model_config)
         # read character data from JSON file
@@ -59,11 +60,14 @@ class Chatbot:
 
     async def save_conversation(self, message, message_content):
         self.conversation_history += f'{message.author.name}: {message_content}\n'
-        print(f"{message.author.name}: {message_content}")
+        user_message = f"{message.author.name}: {message_content}"
+        world_info = await self.bot.get_cog("scan_message").world_info(message, self.char_name)
+        meme_text = await self.bot.get_cog("scan_message").meme_scan(message, self.char_name)
+        print(user_message)
         # define the prompt
         self.prompt = {
-            "prompt": self.character_info + '\n'.join(
-                self.conversation_history.split('\n')[-self.num_lines_to_keep:]) + f'{self.char_name}:',
+            "prompt": self.character_info + f'\n{world_info}'.join(
+                self.conversation_history.split('\n')[-self.num_lines_to_keep:]) + f'{meme_text}' + f'{self.char_name}:',
         }
         # send a post request to the API endpoint
         response = requests.post(f"{self.endpoint}/api/v1/generate", json=self.prompt)
@@ -82,10 +86,15 @@ class Chatbot:
             response_text = ''.join(new_list)
             # add bot response to conversation history
             self.conversation_history = self.conversation_history + f'{self.char_name}: {response_text}\n'
+            if(meme_text):
+                print(f'{meme_text}')
             print(f"{self.char_name}: {response_text}")
             with open(self.convo_filename, "a", encoding="utf-8") as f:
                 f.write(f'{message.author.name}: {message_content}\n')
+                if(meme_text):
+                    f.write(f'{meme_text}')
                 f.write(f'{self.char_name}: {response_text}\n')  # add a separator between
+            await self.bot.get_cog("scan_message").gif_scan(message, response_text, self.char_name)
             return response_text
 
 
@@ -123,13 +132,23 @@ class ChatbotCog(commands.Cog, name="chatbot"):
             server_name = message.channel.name
         else:
             server_name = message.author.name
+        if (await self.bot.get_cog("scan_message").send_scan(message, await self.replace_user_mentions(message_content), self.chatbot.char_name)):
+            return
+        if (await self.bot.get_cog("scan_message").dm_scan(message, await self.replace_user_mentions(message_content),self.chatbot.char_name)):
+            return
         chatlog_filename = os.path.join(self.chatlog_dir, f"{server_name} - chatlog.log")
         if message.guild and self.chatbot.convo_filename != chatlog_filename or \
                 not message.guild and self.chatbot.convo_filename != chatlog_filename:
             await self.chatbot.set_convo_filename(chatlog_filename)
         response = await self.chatbot.save_conversation(message, await self.replace_user_mentions(message_content))
+        return response  
+    @commands.command(name="hello_world")
+    async def hello_world(self, bot) -> None:
+        # get response message from chatbot and return it
+        response = "LETS FUCKING GOOOOOOOOOOOOOO"
+        print("received in cog")
         return response
-
+    
 async def setup(bot):
     # add chatbot cog to bot
     await bot.add_cog(ChatbotCog(bot))
