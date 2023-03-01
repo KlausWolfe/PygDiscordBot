@@ -59,6 +59,7 @@ class Chatbot:
 
     async def save_conversation(self, message, message_content):
         self.conversation_history += f'{message.author.name}: {message_content}\n'
+        print(f"{message.author.name}: {message_content}")
         # define the prompt
         self.prompt = {
             "prompt": self.character_info + '\n'.join(
@@ -81,10 +82,10 @@ class Chatbot:
             response_text = ''.join(new_list)
             # add bot response to conversation history
             self.conversation_history = self.conversation_history + f'{self.char_name}: {response_text}\n'
+            print(f"{self.char_name}: {response_text}")
             with open(self.convo_filename, "a", encoding="utf-8") as f:
                 f.write(f'{message.author.name}: {message_content}\n')
                 f.write(f'{self.char_name}: {response_text}\n')  # add a separator between
-
             return response_text
 
 
