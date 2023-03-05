@@ -60,7 +60,7 @@ class Chatbot:
 
     async def save_conversation(self, message, message_content):
         self.conversation_history += f'{message.author.name}: {message_content}\n'
-        #world_info = await self.bot.get_cog("scan_message").world_info(message)
+        world_info = await self.bot.get_cog("scan_message").world_info(message)
         meme_text = await self.bot.get_cog("scan_message").meme_scan(message)
         # prepare conversation history for user info injection
         lines = self.conversation_history.split('\n')
@@ -72,6 +72,13 @@ class Chatbot:
             else:
                 num = len(lines) - 1
                 lines[num] += user_info
+        # inject world info if available
+        if (world_info is not None):
+            if len(lines) >= 10:
+                lines[-10] += world_info
+            else:
+                num = len(lines) - 1
+                lines[num] += world_info
         # define the prompt
         self.prompt = {
             "prompt": self.character_info + '\n'.join(lines[-self.num_lines_to_keep:]) + f'{meme_text}' + f'{self.char_name}:',

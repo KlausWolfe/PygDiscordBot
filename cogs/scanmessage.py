@@ -25,27 +25,25 @@ class ScanMessageCog(commands.Cog, name="scan_message"):
     #World Info
     @commands.command(name="world_info")
     async def world_info(self, message=None) -> None:
-        world_info = ""
+        world_info = "["
         json_file = f"CharacterInfo/{str(self.char_name)}_world_info.json"
         if os.path.exists(json_file):
-            async with open(json_file) as f:
+            with open(json_file) as f:
                 try:
                     json_data = json.load(f)
                     if json_data is not None:
                         entries = json_data['entries']
                         for value in entries.values():
-                            keys = [str(value['key']).split(",")]
-                            keys = [key.lower() for sublist in keys for key in sublist]
                             search_criteria = str(f"{message.author.name}: {message.content}").lower().strip()
                             if not (str(value['content']) in world_info):
-                                for key in keys:
+                                for key in value['key']:
                                     clean = str(key).lower().replace("'","").replace(']','').replace('[','')
                                     if (clean.strip() in search_criteria):
-                                        world_info = str(value['content']) + "\n"
+                                        world_info += str(f"{value['content']}") + "\n"
                         if world_info != "":
-                            return world_info
+                            return world_info + "]"
                         else:
-                            return ""
+                            return 
                 except Exception as e:
                     print(f"Error loading world info: {e}")
         else:
@@ -117,7 +115,11 @@ class ScanMessageCog(commands.Cog, name="scan_message"):
                 if not (filename):
                     return True
             else:
-                return True
+                last_message = [message async for message in channel.history(limit=1)][0]
+                if(last_message.author != self.bot.user):
+                    return False
+                elif(last_message.author == self.bot.user):
+                    return True
     #Meme Scan
     @commands.command(name="meme_scan")
     async def meme_scan(self, message) -> None:

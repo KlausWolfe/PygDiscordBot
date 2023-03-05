@@ -201,7 +201,19 @@ async def load_cogs() -> None:
                 else:
                     exception = f"{type(e).__name__}: {e}"
                     print(f"Failed to load extension {extension}\n{exception}")
-
+@bot.command()
+async def clearbot(ctx):
+    """Clear all bot messages in the current channel."""
+    # Get the channel where the command was used
+    channel = ctx.channel
+    # Get the bot's user ID
+    bot_id = bot.user.id
+    # Retrieve the channel's message history
+    async for msg in channel.history(limit=None):
+        # Check if the message was sent by the bot
+        if msg.author.id == bot_id:
+            # Delete the bot message
+            await msg.delete()
 
 asyncio.run(load_cogs())
 if bot.endpoint_connected:
