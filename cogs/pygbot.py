@@ -61,29 +61,31 @@ class Chatbot:
     async def save_conversation(self, message, message_content):
         self.conversation_history += f'{message.author.name}: {message_content}\n'
         user_message = f"{message.author.name}: {message_content}"
-        world_info = await self.bot.get_cog("scan_message").world_info(message, self.char_name)
-        meme_text = await self.bot.get_cog("scan_message").meme_scan(message, self.char_name)
+        #world_info = await self.bot.get_cog("scan_message").world_info(message)
+        meme_text = await self.bot.get_cog("scan_message").meme_scan(message)
         print(user_message)
+        # prepare conversation history for user info injection
+        lines = self.conversation_history.split('\n')
+        # inject user info if available
+        user_info = await self.bot.get_cog("user_info_cog").get_userinfo(message)
+        if (user_info is not None):
+            if len(lines) >= 5:
+                lines[-5] += user_info
+            else:
+                num = len(lines) - 1
+                lines[num] += user_info
         # define the prompt
         self.prompt = {
-            "prompt": self.character_info + f'\n{world_info}'.join(
-                self.conversation_history.split('\n')[-self.num_lines_to_keep:]) + f'{meme_text}' + f'{self.char_name}:',
+            "prompt": self.character_info + '\n'.join(lines[-self.num_lines_to_keep:]) + f'{meme_text}' + f'{self.char_name}:',
         }
         # send a post request to the API endpoint
         response = requests.post(f"{self.endpoint}/api/v1/generate", json=self.prompt)
         # check if the request was successful
         if response.status_code == 200:
             # Get the results from the response
-            results = response.json()['results']
-            response_list = [line for line in results[0]['text'][1:].split("\n")]
-            result = [response_list[0]]
-            for item in response_list[1:]:
-                if self.char_name in item:
-                    result.append(item)
-                else:
-                    break
-            new_list = [item.replace(self.char_name + ": ", '\n') for item in result]
-            response_text = ''.join(new_list)
+            results = response.json()["results"]
+            text = results[0]["text"]
+            response_text = self.parse_text_end(text)[0] if self.parse_text_end(text) else ""
             # add bot response to conversation history
             self.conversation_history = self.conversation_history + f'{self.char_name}: {response_text}\n'
             if(meme_text):
@@ -94,8 +96,11 @@ class Chatbot:
                 if(meme_text):
                     f.write(f'{meme_text}')
                 f.write(f'{self.char_name}: {response_text}\n')  # add a separator between
-            await self.bot.get_cog("scan_message").gif_scan(message, response_text, self.char_name)
+            await self.bot.get_cog("scan_message").gif_scan(message, response_text)
             return response_text
+        
+    def parse_text_end(self, text):
+        return [line.strip() for line in str(text).split("\n")]
 
     def batch_save_conversation(self, message):
         # add user message to conversation history
@@ -154,9 +159,9 @@ class ChatbotCog(commands.Cog, name="chatbot"):
             server_name = message.channel.name
         else:
             server_name = message.author.name
-        if (await self.bot.get_cog("scan_message").send_scan(message, await self.replace_user_mentions(message_content), self.chatbot.char_name)):
+        if (await self.bot.get_cog("scan_message").send_scan(message, await self.replace_user_mentions(message_content))):
             return
-        if (await self.bot.get_cog("scan_message").dm_scan(message, await self.replace_user_mentions(message_content),self.chatbot.char_name)):
+        if (await self.bot.get_cog("scan_message").dm_scan(message, await self.replace_user_mentions(message_content))):
             return
         chatlog_filename = os.path.join(self.chatlog_dir, f"{server_name} - chatlog.log")
         if message.guild and self.chatbot.convo_filename != chatlog_filename or \

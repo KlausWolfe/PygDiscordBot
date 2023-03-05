@@ -3,3 +3,6 @@ python-dotenv
 Pillow
 discord.py
 transformers
+pytz
+discord-py-interactions
+interactions-wait-for
