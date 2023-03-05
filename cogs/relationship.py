@@ -22,72 +22,72 @@ class Relationship(commands.Cog, name="relationship"):
     async def consent_detection(self, message) -> None:
         user = message.author
         path = (f"{self.chatlog_dir}/{user.name} - chatlog.log")
-        #try:
-        with open(f'UserConfig/{user.id}.json', 'r') as f:
-            data = json.load(f)
-            init_time = data['timestamp']
-            time_since = await self.time_calc(init_time)
-            if (data['char_name'] != self.char_name):
-                return False
-            if (data['consent_setting'] == 'horny'):
-                with open(self.relationship_path, 'r') as f:
-                    words = json.load(f)
-                    self.consent_prompt = words['horny_prompt']
-            elif (data['consent_setting'] == 'ace'):
-                with open(self.relationship_path, 'r') as f:
-                    words = json.load(f)
-                    self.consent_prompt = words['ace_prompt']
-            with open(path, 'r') as f:
-                lines = f.readlines()[-4:]
-                conversation_history = ''.join(lines)
-            if(data['pronouns'] == "He/Him"):
-                user_gender = 'male'
-            elif(data['pronouns'] == "She/Her"):
-                user_gender = 'female'
-            else:
-                user_gender = 'non-binary'
-            prompt = {
-            'prompt' : self.consent_prompt.replace("{user}", user.name).replace("{char_name}", self.char_name).replace("{char_gender}", data['char_gender'])
-            .replace('{user_gender}', user_gender).replace('{relationship_level}', data['relationship_level'])
-            .replace('{time_since_setup}', time_since) +'\n'+conversation_history+f"{self.char_name}:"
-            }
-            response_text = await self.consent_response(prompt)
-            if not (response_text == None):
-                contains_negative_word = False
-                for word in self.negative_words:
-                    if str(word).lower() in response_text.lower():
-                        contains_negative_word = True       
-                        break
-                if contains_negative_word:
-                    await message.reply(response_text)
-                    with open(path, "a", encoding="utf-8") as f:
-                        print(f'{self.char_name}: {response_text}\n')
-                        f.write(f'{self.char_name}: {response_text}\n')
+        try:
+            with open(f'UserConfig/{user.id}.json', 'r') as f:
+                data = json.load(f)
+                init_time = data['timestamp']
+                time_since = await self.time_calc(init_time)
+                if (data['char_name'] != self.char_name):
                     return False
-                # If no negative words are found, check for positive words
-                if not contains_negative_word:
-                    contains_positive_word = False
-                    for word in self.positive_words:
+                if (data['consent_setting'] == 'horny'):
+                    with open(self.relationship_path, 'r') as f:
+                        words = json.load(f)
+                        self.consent_prompt = words['horny_prompt']
+                elif (data['consent_setting'] == 'ace'):
+                    with open(self.relationship_path, 'r') as f:
+                        words = json.load(f)
+                        self.consent_prompt = words['ace_prompt']
+                with open(path, 'r') as f:
+                    lines = f.readlines()[-4:]
+                    conversation_history = ''.join(lines)
+                if(data['pronouns'] == "He/Him"):
+                    user_gender = 'male'
+                elif(data['pronouns'] == "She/Her"):
+                    user_gender = 'female'
+                else:
+                    user_gender = 'non-binary'
+                prompt = {
+                'prompt' : self.consent_prompt.replace("{user}", user.name).replace("{char_name}", self.char_name).replace("{char_gender}", data['char_gender'])
+                .replace('{user_gender}', user_gender).replace('{relationship_level}', data['relationship_level'])
+                .replace('{time_since_setup}', time_since) +'\n'+conversation_history+f"{self.char_name}:"
+                }
+                response_text = await self.consent_response(prompt)
+                if not (response_text == None):
+                    contains_negative_word = False
+                    for word in self.negative_words:
                         if str(word).lower() in response_text.lower():
-                            contains_positive_word = True
+                            contains_negative_word = True       
                             break
-                    if contains_positive_word:
-                        await message.reply(response_text)
-                        with open(path, "a", encoding="utf-8") as f:
-                            print(f'{self.char_name}: {response_text}\n')
-                            f.write(f'{self.char_name}: {response_text}\n')
-                        return True
-                    else:
+                    if contains_negative_word:
                         await message.reply(response_text)
                         with open(path, "a", encoding="utf-8") as f:
                             print(f'{self.char_name}: {response_text}\n')
                             f.write(f'{self.char_name}: {response_text}\n')
                         return False
-                else:
-                    return False
-        #except Exception as e: 
-        #    print(e)
-        #    return False
+                    # If no negative words are found, check for positive words
+                    if not contains_negative_word:
+                        contains_positive_word = False
+                        for word in self.positive_words:
+                            if str(word).lower() in response_text.lower():
+                                contains_positive_word = True
+                                break
+                        if contains_positive_word:
+                            await message.reply(response_text)
+                            with open(path, "a", encoding="utf-8") as f:
+                                print(f'{self.char_name}: {response_text}\n')
+                                f.write(f'{self.char_name}: {response_text}\n')
+                            return True
+                        else:
+                            await message.reply(response_text)
+                            with open(path, "a", encoding="utf-8") as f:
+                                print(f'{self.char_name}: {response_text}\n')
+                                f.write(f'{self.char_name}: {response_text}\n')
+                            return False
+                    else:
+                        return False
+        except Exception as e: 
+            print(e)
+            return False
     # Get Consent Response
     async def consent_response(self, prompt):
         response = requests.post(f"{self.endpoint}/api/v1/generate", json=prompt)
