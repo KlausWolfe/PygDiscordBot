@@ -198,10 +198,11 @@ class TimedEventsCog(commands.Cog, name="timed_events"):
                     current_time = datetime.utcnow().replace(tzinfo=pytz.utc)
                     time_since_message = current_time - message_timestamp
                     time_since_message_minutes = int(time_since_message.total_seconds() / 60)
-                    random_message = str(random.sample(self.noreply_channel_messages, 1)[0]).replace('{user}', channel.name).replace('{time_since}', f'{time_since_message_minutes} minutes').replace('{char_name}', self.char_name)
-                    print(f"{channel.name} was sent: {random_message} by {self.char_name}")
-                    await channel.send(random_message)
-                    self.save_logs(channel.name, random_message)
+                    if (time_since_message_minutes >= 30):
+                        random_message = str(random.sample(self.noreply_channel_messages, 1)[0]).replace('{user}', channel.name).replace('{time_since}', f'{time_since_message_minutes} minutes').replace('{char_name}', self.char_name)
+                        print(f"{channel.name} was sent: {random_message} by {self.char_name}")
+                        await channel.send(random_message)
+                        self.save_logs(channel.name, random_message)
 
 
     # Save logs
