@@ -1,5 +1,5 @@
 import os, json
-import requests
+import requests, pytz
 from discord import app_commands
 from discord.ext import commands
 from datetime import datetime
@@ -25,7 +25,7 @@ class Relationship(commands.Cog, name="relationship"):
         #try:
         with open(f'UserConfig/{user.id}.json', 'r') as f:
             data = json.load(f)
-            init_time = data['time_of_setup']
+            init_time = data['timestamp']
             time_since = await self.time_calc(init_time)
             if (data['char_name'] != self.char_name):
                 return False
@@ -35,7 +35,7 @@ class Relationship(commands.Cog, name="relationship"):
                     self.consent_prompt = words['horny_prompt']
             elif (data['consent_setting'] == 'ace'):
                 with open(self.relationship_path, 'r') as f:
-                    data = json.load(f)
+                    words = json.load(f)
                     self.consent_prompt = words['ace_prompt']
             with open(path, 'r') as f:
                 lines = f.readlines()[-4:]
@@ -88,30 +88,25 @@ class Relationship(commands.Cog, name="relationship"):
         #except Exception as e: 
         #    print(e)
         #    return False
-    
     # Get Consent Response
     async def consent_response(self, prompt):
         response = requests.post(f"{self.endpoint}/api/v1/generate", json=prompt)
         # check if the request was successful
         if response.status_code == 200:
             # Get the results from the response
-            results = response.json()['results']
-            response_list = [line for line in results[0]['text'][1:].split("\n")]
-            result = [response_list[0]]
-            for item in response_list[1:]:
-                if self.char_name in item:
-                    result.append(item)
-                else:
-                    break
-            new_list = [item.replace(self.char_name + ": ", '\n') for item in result]
-            response_text = ''.join(new_list)
+            results = response.json()["results"]
+            text = results[0]["text"]
+            response_text = self.parse_text_end(text)[0] if self.parse_text_end(text) else ""
             return response_text
         return
     
+    def parse_text_end(self, text):
+        return [line.strip() for line in str(text).split("\n")]
     # Time since calculation
+    @commands.command(name="time_calc")
     async def time_calc(self, init_time):
-        timestamp = datetime.fromisoformat(init_time)
-        end_time = datetime.now()
+        timestamp = datetime.fromisoformat(init_time).replace(tzinfo=pytz.utc)
+        end_time = datetime.utcnow().replace(tzinfo=pytz.utc)
         time_difference = end_time - timestamp
         difference_seconds = time_difference.total_seconds()
         if difference_seconds < 60:

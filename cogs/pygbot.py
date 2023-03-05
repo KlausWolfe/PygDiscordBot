@@ -60,10 +60,8 @@ class Chatbot:
 
     async def save_conversation(self, message, message_content):
         self.conversation_history += f'{message.author.name}: {message_content}\n'
-        user_message = f"{message.author.name}: {message_content}"
         #world_info = await self.bot.get_cog("scan_message").world_info(message)
         meme_text = await self.bot.get_cog("scan_message").meme_scan(message)
-        print(user_message)
         # prepare conversation history for user info injection
         lines = self.conversation_history.split('\n')
         # inject user info if available
@@ -98,7 +96,7 @@ class Chatbot:
                 f.write(f'{self.char_name}: {response_text}\n')  # add a separator between
             await self.bot.get_cog("scan_message").gif_scan(message, response_text)
             return response_text
-        
+    
     def parse_text_end(self, text):
         return [line.strip() for line in str(text).split("\n")]
 

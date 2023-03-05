@@ -74,6 +74,7 @@ class ScanMessageCog(commands.Cog, name="scan_message"):
         user = message.author
         path = (f"{self.chatlog_dir}/{user.name} - chatlog.log")
         channel = await user.create_dm()
+        print(f"{user.name}: {await self.replace_ids(message_content)}")
         if ("send" in message_content.lower()) and not ("meme" in message_content.lower()):
             with open(path, 'a') as f:
                 f.write(f"{user.name}: {await self.replace_ids(message_content)}\n")
@@ -108,6 +109,7 @@ class ScanMessageCog(commands.Cog, name="scan_message"):
                                         send_text = str(f"[{str(self.char_name)} sends {user.name} a picture of {str(self.char_name)}'s {name.lower()}.]\n")
                                         print(send_text)
                                         with open(path, 'a') as f:
+                                            print(f"{str(self.char_name)}: " + send_text)
                                             f.write(f"{str(self.char_name)}: " + send_text)
                                         return True
                                 except:
@@ -148,6 +150,7 @@ class ScanMessageCog(commands.Cog, name="scan_message"):
                                     file = discord.File(f)
                                     await message.channel.send("How's this?")
                                     await message.channel.send(file=file)
+                                    print(f"[{str(self.char_name)} sends {user.name} a {name} meme.]\n")
                                     return str(f"[{str(self.char_name)} sends {user.name} a {name} meme.]\n")
                             except:
                                 pass
@@ -172,13 +175,17 @@ class ScanMessageCog(commands.Cog, name="scan_message"):
                         await channel.send(dm_message)
                         with open(path, 'a') as f:
                             f.write(f"{user.name}: {await self.replace_ids(message_content)}\n")
+                            print(f"{str(user.name)}: {await self.replace_ids(message_content)}\n")
                             f.write(f"{str(self.char_name)}: {dm_message}\n")
+                            print(f"{str(self.char_name)}: {dm_message}\n")
                         return True
             if (self.bot.user in message.mentions):
                 dm_message = f"Yes, {user.name}? You wanted to speak privately?\n"
-                if ("dm" in str(message.content).lower()) or ("direct message" in str(message.content).lower()):
+                if ("dm" in str(message_content).lower()) or ("direct message" in str(message_content).lower()):
                     await channel.send(dm_message)
                     with open(path, 'a') as f:
+                        print(f"{str(user.name)}: {await self.replace_ids(message_content)}\n")
+                        print(f"{str(self.char_name)}: {dm_message}\n")
                         f.write(f"{str(self.char_name)}: {dm_message}\n")
                     return True
                 else:

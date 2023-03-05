@@ -159,7 +159,9 @@ class UserInfoCog(commands.Cog, name="user_info_cog"):
             user_gender = 'female'
         else:
             user_gender = 'non-binary'
-        relationship_string = f"\n[{self.char_name} is talking to {data['name']}. {data['name']} is {self.char_name}'s {user_gender} {data['relationship_level']}.]"
+        init_time = data['timestamp']
+        time_since = await self.bot.get_cog("relationship").time_calc(init_time)
+        relationship_string = f"\n[{self.char_name} is talking to {data['name']}. {data['name']} is {self.char_name}'s {user_gender} {data['relationship_level']}. {self.char_name} has known {data['name']} for {time_since}.]"
         return relationship_string
     @commands.command()
     async def bothelp(self, ctx):

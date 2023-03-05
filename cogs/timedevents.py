@@ -41,7 +41,7 @@ class TimedEventsCog(commands.Cog, name="timed_events"):
                 user = self.bot.get_user(user)
             except:
                 user = None
-            if (user is not None) and not (user == self.bot.user):
+            if (user is not None) and not (user == self.bot.user) and (user.id not in self.blacklist_list):
                 # Create a DM channel with the user
                 try:
                     dm_channel = await user.create_dm()
@@ -100,7 +100,7 @@ class TimedEventsCog(commands.Cog, name="timed_events"):
                 user = self.bot.get_user(user)
             except:
                 user = None
-            if (user is not None) and not (user == self.bot.user):
+            if (user is not None) and not (user == self.bot.user) and (user.id not in self.blacklist_list):
                 # Create a DM channel with the user
                 try:
                     dm_channel = await user.create_dm()
@@ -167,18 +167,15 @@ class TimedEventsCog(commands.Cog, name="timed_events"):
                         current_time = datetime.utcnow().replace(tzinfo=pytz.utc)
                         time_since_message = current_time - message_timestamp
                         time_since_message_minutes = int(time_since_message.total_seconds() / 60)
-                        if (time_since_message_minutes >= 30) and (random.random() < 0.5) and (time_since_message_minutes < 90):
-                            random_message = str(random.sample(self.noreply_messages, 1)[0]).replace('{user}', user.name).replace('{time_since}', f'{time_since_message_minutes} minutes').replace('{char_name}', self.char_name)
-                            try:
-                                print(f"{user.name} was sent: {random_message} by {self.char_name}")
-                                await dm_channel.send(random_message)
-                                self.save_logs(user.name, random_message)
-                            except:
-                                pass
-                        else:
-                            pass
-            else:
-                pass
+                        if ((time_since_message_minutes <= 90)):
+                            if (time_since_message_minutes >= 30) and (random.random() <= 0.5):
+                                random_message = str(random.sample(self.noreply_messages, 1)[0]).replace('{user}', user.name).replace('{time_since}', f'{time_since_message_minutes} minutes').replace('{char_name}', self.char_name)
+                                try:
+                                    print(f"{user.name} was sent: {random_message} by {self.char_name}")
+                                    await dm_channel.send(random_message)
+                                    self.save_logs(user.name, random_message)
+                                except:
+                                    pass
 
 
     async def timed_channel(self):
