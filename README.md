@@ -41,6 +41,17 @@ This is a discord bot that uses Pygmalion-6B and a KoboldAI url. The bot now sup
 
 Discord only allows bots to be renamed twice per hour.
 
+Extra shit:
+
+>Configure your own GIF JSON like this (located in /CharacterInfo):
+name the file 'Character-Name_gif.JSON' (exampel: Aqua-Sama_gifs.json
+
+{
+    "blush": "https://tenor.com/view/aqua-gif-20916837",
+    "turns red": "https://tenor.com/view/aqua-gif-20916837"
+}
+Which is 'keyword': 'gif.link' formatting.
+
 [Get more Characters](https://booru.plus/+pygmalion)
 # More Info: 
 
