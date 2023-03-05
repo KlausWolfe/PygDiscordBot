@@ -44,7 +44,7 @@ Discord only allows bots to be renamed twice per hour.
 Extra shit:
 
 >Configure your own GIF JSON like this (located in /CharacterInfo):
-name the file 'Character-Name_gif.JSON' (exampel: Aqua-Sama_gifs.json
+name the file 'Character-Name_gif.JSON' (example: Aqua-Sama_gifs.json)
 
 {
     "blush": "https://tenor.com/view/aqua-gif-20916837",
