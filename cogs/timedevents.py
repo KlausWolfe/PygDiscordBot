@@ -148,7 +148,7 @@ class TimedEventsCog(commands.Cog, name="timed_events"):
                 if (dm_channel is not None):
                     try:
                         last_message = [message async for message in dm_channel.history(limit=1)][0]
-                    except discord.errors.Forbidden:
+                    except:
                         last_message = None
                     try:
                         user_path = f"UserConfig/{last_message.author.id}.json"
@@ -172,7 +172,7 @@ class TimedEventsCog(commands.Cog, name="timed_events"):
                         time_since_message = current_time - message_timestamp
                         time_since_message_minutes = int(time_since_message.total_seconds() / 60)
                         if ((time_since_message_minutes <= 90)):
-                            if (time_since_message_minutes >= 30) and (random.random() <= 0.5):
+                            if (time_since_message_minutes >= 90) and (random.random() <= 0.5):
                                 random_message = str(random.sample(self.noreply_messages, 1)[0]).replace('{user}', user.name).replace('{time_since}', f'{time_since_message_minutes} minutes').replace('{char_name}', self.char_name)
                                 try:
                                     print(f"{user.name} was sent: {random_message} by {self.char_name}")
@@ -243,7 +243,7 @@ class TimedEventsCog(commands.Cog, name="timed_events"):
         print("Timed Events Cog Loaded.")
         await self.scan_servers()
         await self.reboot_reply()
-        await asyncio.gather(self.run_timed_reply(), self.run_timed_events())
+        await asyncio.gather(self.run_timed_events())
 
     @commands.command()
     async def blacklist(self, ctx) -> None:

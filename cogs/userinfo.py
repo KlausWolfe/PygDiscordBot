@@ -143,16 +143,21 @@ class UserInfoCog(commands.Cog, name="user_info_cog"):
             data = user_data
         await ctx.send("Please select your pronouns:", view=PronounView(data, user_path))
 
+    def humanize_date(self, dt):
+        suffix = {1: 'st', 2: 'nd', 3: 'rd'}.get(dt.day if dt.day < 20 else dt.day % 10, 'th')
+        return dt.strftime(f'%B {dt.day}{suffix}, %Y. at %H:%M')
 
     @commands.command(name="get_userinfo")
     async def get_userinfo(self, message):
+        current_time = self.humanize_date(datetime.now())
         userid = message.author.id
         user_path = f"UserConfig/{userid}.json"
         try:
             with open(user_path, "r") as f:
                 data = json.load(f)
         except FileNotFoundError:
-            return None
+            
+            return f"\n[The current date is {current_time}.\n]"
         if(data['pronouns'] == "He/Him"):
             user_gender = 'male'
         elif(data['pronouns'] == "She/Her"):
@@ -161,7 +166,7 @@ class UserInfoCog(commands.Cog, name="user_info_cog"):
             user_gender = 'non-binary'
         init_time = data['timestamp']
         time_since = await self.bot.get_cog("relationship").time_calc(init_time)
-        relationship_string = f"\n[{self.char_name} is talking to {data['name']}. {data['name']} is {self.char_name}'s {user_gender} {data['relationship_level']}. {self.char_name} has known {data['name']} for {time_since}.]"
+        relationship_string = f"\n[{self.char_name} is talking to {data['name']}. {data['name']} is {self.char_name}'s {user_gender} {data['relationship_level']}. {self.char_name} has known {data['name']} for {time_since}. The current time is {current_time}.\n]"
         return relationship_string
     @commands.command()
     async def bothelp(self, ctx):

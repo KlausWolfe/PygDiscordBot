@@ -7,7 +7,11 @@ class ScanMessageCog(commands.Cog, name="scan_message"):
         self.bot = bot
         self.chatlog_dir = bot.chatlog_dir
         self.char_name = bot.char_name
-
+        self.relationship_path = 'CharacterInfo/relationship/words.json'
+        with open(self.relationship_path, 'r') as f:
+            data = json.load(f)
+            self.send_words = data['send_detection']
+        
     async def replace_ids(self, content):
         user_ids = re.findall(r'<@(\d+)>', content)
         for user_id in user_ids:
@@ -39,9 +43,9 @@ class ScanMessageCog(commands.Cog, name="scan_message"):
                                 for key in value['key']:
                                     clean = str(key).lower().replace("'","").replace(']','').replace('[','')
                                     if (clean.strip() in search_criteria):
-                                        world_info += str(f"{value['content']}") + "\n"
+                                        world_info += str(f"{value['content']}") + "\n]"
                         if world_info != "":
-                            return world_info + "]"
+                            return world_info
                         else:
                             return 
                 except Exception as e:
@@ -73,7 +77,7 @@ class ScanMessageCog(commands.Cog, name="scan_message"):
         path = (f"{self.chatlog_dir}/{user.name} - chatlog.log")
         channel = await user.create_dm()
         print(f"{user.name}: {await self.replace_ids(message_content)}")
-        if ("send" in message_content.lower()) and not ("meme" in message_content.lower()):
+        if any(word in message_content.lower() for word in self.send_words) and not ("meme" in message_content.lower()):
             with open(path, 'a') as f:
                 f.write(f"{user.name}: {await self.replace_ids(message_content)}\n")
             directory = f"Images/{str(self.char_name)}/"

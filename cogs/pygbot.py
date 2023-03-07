@@ -66,16 +66,15 @@ class Chatbot:
         lines = self.conversation_history.split('\n')
         # inject user info if available
         user_info = await self.bot.get_cog("user_info_cog").get_userinfo(message)
-        if (user_info is not None):
-            if len(lines) >= 5:
-                lines[-5] += user_info
-            else:
-                num = len(lines) - 1
-                lines[num] += user_info
+        if len(lines) >= 5:
+            lines[-5] += user_info
+        else:
+            num = len(lines) - 1
+            lines[num] += user_info
         # inject world info if available
         if (world_info is not None):
-            if len(lines) >= 10:
-                lines[-10] += world_info
+            if len(lines) >= 6:
+                lines[-6] += world_info
             else:
                 num = len(lines) - 1
                 lines[num] += world_info
@@ -86,6 +85,7 @@ class Chatbot:
         # send a post request to the API endpoint
         response = requests.post(f"{self.endpoint}/api/v1/generate", json=self.prompt)
         # check if the request was successful
+        print(response)
         if response.status_code == 200:
             # Get the results from the response
             results = response.json()["results"]
